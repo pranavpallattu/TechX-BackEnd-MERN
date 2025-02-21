@@ -135,20 +135,21 @@ exports.getCouponsForCourse = async (req, res) => {
 exports.editCouponController = async (req, res) => {
     try {
         const { code, discountAmount, expiryDate, courseId } = req.body;
-        const { id } = req.params; // Get coupon ID from URL
+        const { id } = req.params;
 
-        // Validate input
         if (!code || !discountAmount || !expiryDate || !courseId) {
             return res.status(400).json({ error: "All fields are required" });
         }
 
-        // Find and update coupon
-        const updatedCoupon = await coupons.findByIdAndUpdate(id, { code, discountAmount, expiryDate, courseId },
-            { new: true } // Return the updated document
-        );
+        const updatedCoupon = await coupons.findByIdAndUpdate(
+            id,
+            { code, discountAmount, expiryDate, courseId },
+            { new: true }
+        ).populate("courseId", "title");  // ✅ Populate course title again
 
-        
-        await updatedCoupon.save()
+        if (!updatedCoupon) {
+            return res.status(404).json({ error: "Coupon not found" });
+        }
 
         res.status(200).json({ message: "Coupon updated successfully", updatedCoupon });
     } catch (error) {
@@ -156,3 +157,4 @@ exports.editCouponController = async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 };
+
