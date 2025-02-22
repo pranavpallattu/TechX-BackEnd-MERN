@@ -30,7 +30,7 @@ const elserver=express()
 
 
 elserver.use(cors({
-    origin: ['https://tech-x-front-end-mern.vercel.app'], // Allow Vercel frontend
+    origin: ['http://localhost:5173', 'https://tech-x-front-end-mern.vercel.app'], // Allow both local & Vercel
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
