@@ -28,7 +28,12 @@ const elserver=express()
 
 // server using cors
 
-elserver.use(cors())
+
+elserver.use(cors({
+    origin: ['https://tech-x-front-end-mern.vercel.app'], // Allow Vercel frontend
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // parse the data-- returns middleware to parse the data
 
