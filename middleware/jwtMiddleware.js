@@ -18,7 +18,6 @@ const jwtMiddleware = (req, res, next) => {
         return res.status(401).json({ error: "Token missing" });
     }
 
-    try {
         // 3️⃣ Verify the token
         const decoded = jwt.verify(token, "secretkey"); // Make sure this key matches your .env file
         console.log("Decoded JWT Payload:", decoded);
@@ -32,10 +31,7 @@ const jwtMiddleware = (req, res, next) => {
         console.log(req.user);
 
         next();
-    } catch (error) {
-        console.error("Authorization failed:", error.message);
-        return res.status(401).json({ error: "Invalid or expired token" });
-    }
+   
 };
 
 module.exports = jwtMiddleware;

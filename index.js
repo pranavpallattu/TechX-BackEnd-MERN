@@ -28,7 +28,6 @@ const elserver=express()
 
 // server using cors
 
-
 elserver.use(cors({
     origin: ['http://localhost:5173', 'https://tech-x-front-end-mern.vercel.app'], // Allow both local & Vercel
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -39,27 +38,19 @@ elserver.use(cors({
 
 elserver.use(express.json())
 
-// exporting upload folder
-
-elserver.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // create port
 
 const PORT=4000 || process.env.PORT
 
 // listen
 
+elserver.use(router)
+
+
 elserver.listen(PORT,()=>{
     console.log(`elserver is running successfully in port number ${PORT}`);
     
 })
-
-
-
-
-
-elserver.use(router)
-
-
 
 
 

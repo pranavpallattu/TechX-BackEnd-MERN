@@ -34,8 +34,8 @@ router.post('/login', usercontroller.login)
 // add course
 router.post('/add-course', jwtMiddleware, multerConfig.fields([
   { name: 'coverImage', maxCount: 1 },
-  { name: 'introVideo', maxCount: 8 }
-]), coursecontroller.addCourseController)
+  { name: 'introVideo', maxCount: 1 } // Only 1 intro video
+]), coursecontroller.addCourseController);
 
 
 // To get all courses in adminpage

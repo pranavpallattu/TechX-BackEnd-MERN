@@ -1,25 +1,27 @@
 const courses = require("../Model/courseModel");
 const lectures = require("../Model/lectureModel")
 const coupons = require("../Model/couponModel")
+const cloudinary = require("../config/cloudinary"); // Import Cloudinary configuration
+
 
 // To add course
 
+
 exports.addCourseController = async (req, res) => {
-  console.log("inside add course controller");
-  const { title, instructor, price, skill, duration, description } = req.body;
-
-  const coverImage = req.files.coverImage[0].filename; // Save with "uploads/"
-  console.log(coverImage);
-
-  const introVideo = req.files.introVideo[0].filename;
-  console.log(introVideo);
-
   try {
+    console.log("Inside add course controller");
+
+    const { title, instructor, price, skill, duration, description } = req.body;
+    console.log(req.body);
+    console.log(req.files);
+
+    // Check if course already exists
     const existingCourse = await courses.findOne({ title });
     if (existingCourse) {
       return res.status(406).json("Course already exists");
     }
 
+    // Save the Cloudinary URLs directly from req.files
     const newCourse = new courses({
       title,
       instructor,
@@ -27,17 +29,16 @@ exports.addCourseController = async (req, res) => {
       skill,
       duration,
       description,
-      coverImage,
-      introVideo,
+      coverImage: req.files.coverImage[0].path, // Direct Cloudinary URL
+      introVideo: req.files.introVideo[0].path, // Direct Cloudinary URL
     });
 
     await newCourse.save();
-    res.status(200).json("Course successfully added");
+    res.status(200).json({ message: "Course successfully added", course: newCourse });
   } catch (error) {
-    res.status(400).json(`Course adding failed due to ${error}`);
+    res.status(400).json({ error: `Course adding failed due to ${error.message}` });
   }
 };
-
 
 // To get all courses in adminpage
 
@@ -103,17 +104,36 @@ exports.deleteCourseController = async (req, res) => {
 // To edit course
 
 exports.editCourseController = async (req, res) => {
-  const { title, instructor, price, skill, duration, description, coverImage, introVideo } = req.body;
+  console.log("Inside editCourseController");
 
-  const uploadImage = req.files ? req.files.coverImage?.[0]?.filename : coverImage
+  const { title, instructor, price, skill, duration, description } = req.body;
+  console.log("Received Request Body:", req.body);
+  console.log("Received Files:", req.files);
 
-  const uploadVideo = req.files ? req.files.introVideo?.[0]?.filename : introVideo
-
-  // ✅ Correctly extract courseId from req.params
+  // ✅ Extract courseId from params
   const { id: courseId } = req.params;
   console.log("Received Course ID:", courseId);
 
   try {
+    // ✅ Fetch the existing course
+    const existingCourse = await courses.findById(courseId);
+    if (!existingCourse) {
+      return res.status(404).json({ success: false, message: "Course not found" });
+    }
+
+    // ✅ Use new uploaded file paths (if provided) from Multer-Cloudinary, otherwise keep existing paths
+    const coverImagePath = req.files && req.files.coverImage 
+      ? req.files.coverImage[0].path  // ✅ Directly use Multer-Cloudinary URL
+      : existingCourse.coverImage;
+
+    const introVideoPath = req.files && req.files.introVideo 
+      ? req.files.introVideo[0].path  // ✅ Directly use Multer-Cloudinary URL
+      : existingCourse.introVideo;
+
+    console.log("Updated Cover Image Path:", coverImagePath);
+    console.log("Updated Intro Video Path:", introVideoPath);
+
+    // ✅ Update course with new data
     const updatedCourse = await courses.findByIdAndUpdate(
       courseId,
       {
@@ -123,16 +143,17 @@ exports.editCourseController = async (req, res) => {
         skill,
         duration,
         description,
-        coverImage: uploadImage,
-        introVideo: uploadVideo,
+        coverImage: coverImagePath,
+        introVideo: introVideoPath,
       },
       { new: true }
     );
 
-    await updatedCourse.save()
-    res.status(200).json("Course updated successfully");
+    console.log("Updated Course:", updatedCourse);
+
+    res.status(200).json({ success: true, message: "Course updated successfully", updatedCourse });
   } catch (error) {
-    console.log(error);
-    res.status(400).json(`Course updation failed due to ${error.message}`);
+    console.error("Error during course update:", error);
+    res.status(500).json({ success: false, error: `Course update failed due to ${error.message}` });
   }
 };

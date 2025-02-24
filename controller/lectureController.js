@@ -3,11 +3,12 @@ const lectures = require("../Model/lectureModel");
 const path = require("path");
 
 // To add lecture to a course
-
 exports.addLectureController = async (req, res) => {
   try {
     const { id: courseId } = req.params;
     const { title, description } = req.body;
+
+    console.log(req.file); // Debugging: Check what req.file contains
 
     // Validate input
     if (!title || !description || !req.file) {
@@ -24,11 +25,14 @@ exports.addLectureController = async (req, res) => {
     const lecture = new lectures({
       title,
       description,
-      lectureVideo: req.file.path.replace(/\\/g, "/"), // Normalize path
+      lectureVideo: req.file.path, // Directly use Cloudinary URL
       course: courseId,
     });
+    
 
     await lecture.save();
+    console.log(lecture);
+    
 
     // Add lecture to course
     course.lectures.push(lecture._id);
@@ -37,8 +41,7 @@ exports.addLectureController = async (req, res) => {
     res.status(201).json({ message: "Lecture added successfully.", lecture });
   } catch (error) {
     console.error("Error adding lecture:", error);
-    res.status(500)
-      .json({ message: "Server error. Unable to add lecture.", error });
+    res.status(500).json({ message: "Server error. Unable to add lecture.", error });
   }
 };
 
